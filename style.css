@@ -1,0 +1,159 @@
+body {
+  font-family: 'Lexend', sans-serif;
+  background-color: #f3f4f6;
+  font-size: 0.875rem;
+}
+.font-comfortaa { font-family: 'Comfortaa', cursive; }
+
+.table-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+
+#tabela-dados {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+  min-width: max-content;
+  margin: 0;
+}
+
+#tabela-dados th, #tabela-dados td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px dashed #e5e7eb;
+  white-space: normal;
+  word-break: break-word;
+}
+
+#tabela-dados thead {
+  background-color: #f9fafb !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.email-copiar, .contato-whatsapp, .copiar-generico {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+.email-copiar:hover, .contato-whatsapp:hover, .copiar-generico:hover {
+  background-color: #f3f4f6;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+#dropdownMenu {
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb;
+}
+
+body.resizing { cursor: col-resize; }
+
+
+/* Atualização 03: botão Limpar Busca — cor laranja da identidade */
+#limparBusca {
+  background-color: #f97316 !important;
+  color: white !important;
+}
+#limparBusca:hover {
+  background-color: #ea580c !important;
+}
+
+/* Section 02 ============================================================================================== */
+/* ---------- Fixes Section2: grid scroll & painel ficheiro scroll ---------- */
+
+/* wrapper do grid (já existente) */
+#grid-perfis-wrapper {
+  max-height: 50vh; /* ajustável */
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* painel de ficha: permitir scroll vertical quando muitos campos */
+#panel-ficha {
+  max-height: 62vh; /* controla a área visível do painel */
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* garantir que o wrapper que contém o painel escondido não mostre conteúdo */
+#panel-ficha-wrapper[style*="display:none"] {
+  display: none !important;
+}
+
+/* manutenção do visual: bordas, sombras e animações (se já incorporado) */
+.profile-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(8, 15, 27, 0.08);
+}
+
+/* Animações suaves */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(6px); }
+}
+.animate-fade-in-up { animation: fadeInUp 220ms ease both; }
+.animate-fade-out { animation: fadeOut 160ms ease both; }
+
+/* Edições para Section Edição */
+/* Estilos para a página de edição */
+#section-pastas, #section-detalhes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#grid-perfis {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Melhorias para os campos de edição */
+#perfil-campos input:focus, 
+#perfil-campos textarea:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* Scroll personalizado */
+#section-detalhesDados::-webkit-scrollbar {
+  width: 6px;
+}
+
+#section-detalhesDados::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+#section-detalhesDados::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+#section-detalhesDados::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

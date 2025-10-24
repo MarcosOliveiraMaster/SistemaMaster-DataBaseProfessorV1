@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edição de Perfis - Professores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700&family=Comfortaa:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="h-screen flex flex-col">
+  <header class="relative bg-orange-500 h-16 flex items-center px-6 shadow-md">
+    <div class="absolute right-0 top-0 h-full w-1/4 bg-orange-500 shadow-[inset_5px_0_15px_rgba(0,0,0,0.1)] rounded-bl-3xl"></div>
+    <div class="relative z-10 flex items-center">
+      <div class="bg-gray-300 w-12 h-12 rounded-lg mr-4"></div>
+      <div>
+        <h1 id="tituloPrincipal" class="text-xl text-white font-bold">Edição de Perfis</h1>
+        <p id="subtitulo" class="text-xs text-orange-100 font-comfortaa">Ester Calazans: Administradora geral</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <nav class="bg-gray-200 w-20 flex flex-col items-center py-6 space-y-4 rounded-r-3xl">
+      <a href="index.html" class="w-12 h-12 border-2 border-orange-500 rounded-xl hover:bg-orange-500 transition duration-300 flex items-center justify-center" title="Voltar ao Dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      <button class="w-12 h-12 border-2 border-orange-500 bg-orange-500 rounded-xl transition duration-300" title="Edição de Perfis (Atual)"></button>
+    </nav>
+
+    <main class="flex-1 bg-gray-200 m-6 rounded-3xl shadow-inner overflow-hidden relative">
+      
+      <!-- Section Pastas -->
+      <section id="section-pastas" class="h-full flex flex-col p-6">
+        <h2 class="text-xl font-semibold mb-4" style="color: #f97316;">Selecione um Professor</h2>
+        <div id="grid-perfis" class="grid grid-cols-5 gap-6 flex-1 overflow-y-auto">
+          <!-- Pastas serão renderizadas via JavaScript -->
+        </div>
+      </section>
+
+      <!-- Section Detalhes (oculta inicialmente) -->
+      <section id="section-detalhes" class="hidden h-full flex flex-col p-6">
+        <h2 id="perfil-nome-titulo" class="text-xl font-semibold mb-4" style="color: #f97316;">Detalhes do Perfil</h2>
+        
+        <!-- Dados Editáveis -->
+        <div id="section-detalhesDados" class="flex-1 overflow-y-auto bg-white rounded-lg shadow-sm p-6 mb-4">
+          <div id="perfil-campos" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Campos serão preenchidos via JavaScript -->
+          </div>
+        </div>
+        
+        <!-- Botões -->
+        <div id="section-detalhesBotoes" class="flex justify-end gap-4 pt-4 border-t border-gray-200">
+          <button id="perfil-voltar" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-md transition-all font-medium">
+            Voltar
+          </button>
+          <button id="perfil-salvar" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md transition-all font-medium">
+            Salvar Alterações
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script-sectionEdicao.js"></script>
+</body>
+</html>
