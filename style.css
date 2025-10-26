@@ -157,3 +157,82 @@ body.resizing { cursor: col-resize; }
 #section-detalhesDados::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+/* Section 03 ============================================================================================== */
+
+.font-comfortaa { font-family: 'Comfortaa', cursive; }
+
+/* Disciplinas reduzidas */
+.disciplinas-section.reduzida {
+  padding: 0.5rem;
+}
+.disciplinas-section.reduzida h3 {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.grid-disciplinas-scroll {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 4 colunas */
+  grid-auto-flow: row;
+  gap: 0.4rem;
+  overflow-y: auto;
+  padding-bottom: 0.3rem;
+  align-items: start;
+  max-height: 100px; /* Ajuste conforme necessário */
+}
+
+.disciplina-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fafafa;
+  border: 1px solid #eeeeee;
+  padding: 0.3rem;
+  border-radius: 6px;
+  min-height: 50px;
+  max-width: 100px;
+}
+.disciplina-item img {
+  width: 60px;
+  height: auto;
+  margin-bottom: 0.2rem;
+}
+.disciplina-item .disc-title {
+  font-size: 0.65rem;
+  text-align: center;
+}
+
+/* Experiências – scroll único */
+#experienciasWrapper {
+  max-height: auto;
+  overflow-y: auto;
+  
+}
+
+#experienciasConteudo {
+  max-height: 250px; /* igual ao comportamento do "informacoesCandidato" */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#experienciasConteudo::-webkit-scrollbar {
+  width: 6px;
+}
+#experienciasConteudo::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 4px;
+}
+#experienciasConteudo::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+
+
+#experienciasWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+#experienciasWrapper::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 5px;
+}
+
+/* Area Avaliacao ===================================================== */
