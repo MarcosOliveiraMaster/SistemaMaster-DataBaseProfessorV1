@@ -40,7 +40,7 @@
 
     <main class="flex-1 bg-gray-200 m-6 rounded-3xl shadow-inner overflow-hidden relative p-4">
       <div class="flex h-full gap-4">
-        
+
         <!-- COLUNA 1 -->
         <div class="w-1/4 flex flex-col gap-3">
           <div class="bg-white rounded-lg shadow-sm p-3">
@@ -70,8 +70,6 @@
 
         <!-- COLUNA CENTRAL -->
         <div class="w-2/4 flex flex-col gap-3 min-h-0">
-          
-          <!-- DISPONIBILIDADE -->
           <div id="sectionDisponibilidade" class="bg-white rounded-lg shadow-sm p-3">
             <h3 class="font-semibold text-gray-700 mb-2 text-sm">Disponibilidade</h3>
             <div class="overflow-x-auto">
@@ -89,66 +87,79 @@
             </div>
           </div>
 
-          <!-- DISCIPLINAS -->
           <section id="sectionDisciplinas" class="bg-white rounded-lg shadow-sm p-3 disciplinas-section reduzida">
             <h3 class="font-semibold text-gray-700 mb-2 text-sm">Disciplinas</h3>
             <div id="gridDisciplinas" class="grid-disciplinas-scroll"></div>
           </section>
 
-          <!-- INFORMAÇÕES + EXPERIÊNCIAS -->
           <div class="flex gap-3 mt-2 min-h-0">
-            
-            <!-- Informações -->
             <div id="informacoesWrapper" class="w-1/2 bg-white rounded-lg shadow-sm p-3 flex flex-col min-h-0">
               <h3 class="font-semibold text-gray-700 mb-2 text-sm">Informações</h3>
               <div id="informacoesCandidato" class="flex-1 overflow-y-auto text-xs"></div>
             </div>
 
-           <!-- EXPERIÊNCIAS -->
             <div id="experienciasWrapper" class="w-1/2 bg-white rounded-lg shadow-sm p-3 flex flex-col min-h-0">
-            <h3 class="font-semibold text-gray-700 mb-2 text-sm">Experiências</h3>
-
-            <!-- o scroll acontece dentro desta div -->
-            <div id="experienciasConteudo" class="flex-1 overflow-y-auto text-xs">
-                
+              <h3 class="font-semibold text-gray-700 mb-2 text-sm">Experiências</h3>
+              <div id="experienciasConteudo" class="flex-1 overflow-y-auto text-xs">
                 <div id="sectionAulas" class="bg-gray-50 rounded p-2 mb-2">
-                <h4 class="text-xs font-semibold mb-1 text-gray-700">Exp. com Aulas particulares</h4>
-                <div id="descricaoAulas" class="text-xs text-gray-600 mb-3"></div>
+                  <h4 class="text-xs font-semibold mb-1 text-gray-700">Exp. com Aulas particulares</h4>
+                  <div id="descricaoAulas" class="text-xs text-gray-600 mb-3"></div>
                 </div>
-
                 <div id="sectionNeuro" class="bg-gray-50 rounded p-2 mb-2">
-                <h4 class="text-xs font-semibold mb-1 text-gray-700">Exp. com alunos atípicos</h4>
-                <div id="descricaoNeuro" class="text-xs text-gray-600 mb-3"></div>
+                  <h4 class="text-xs font-semibold mb-1 text-gray-700">Exp. com alunos atípicos</h4>
+                  <div id="descricaoNeuro" class="text-xs text-gray-600 mb-3"></div>
                 </div>
-
                 <div id="sectionTdics" class="bg-gray-50 rounded p-2">
-                <h4 class="text-xs font-semibold mb-1 text-gray-700">Conhecimento em TDICs</h4>
-                <div id="descricaoTdics" class="text-xs text-gray-600 mb-3"></div>
+                  <h4 class="text-xs font-semibold mb-1 text-gray-700">Conhecimento em TDICs</h4>
+                  <div id="descricaoTdics" class="text-xs text-gray-600 mb-3"></div>
                 </div>
-
+              </div>
             </div>
-            </div>
-
-
-
-          
           </div>
         </div>
 
         <!-- AVALIAÇÃO -->
-        <div class="w-1/4 bg-white rounded-lg shadow-sm p-3 flex flex-col">
+        <div id="avaliacaoWrapper" class="w-1/4 bg-white rounded-lg shadow-sm p-3 flex flex-col">
           <h3 class="font-semibold text-gray-700 mb-2 text-sm">Avaliação</h3>
-          <textarea id="impressoesCandidato" class="w-full border rounded p-2 text-xs h-24 resize-vertical mb-3"></textarea>
-          <button id="btnSalvarImpressoes" class="bg-green-600 text-white text-xs p-1 rounded mb-2">Salvar</button>
+
+          <textarea id="impressoesCandidato" placeholder="Comentários do avaliador"
+            class="w-full border rounded p-2 text-xs resize-vertical mb-3"></textarea>
+
+          <label class="text-xs font-semibold text-gray-700 mb-1">Status</label>
+          <select id="statusCandidato" class="w-full border rounded p-1 text-xs mb-3 text-gray-700">
+            <option value="Candidato">Candidato</option>
+            <option value="Reprovado">Reprovado</option>
+            <option value="Aprovado">Aprovado</option>
+          </select>
+
+          <label class="text-xs font-semibold text-gray-700 mb-1">Enviar Relatório</label>
+          <button id="btnCopiarRelatorio" class="w-full bg-orange-500 text-white text-xs p-2 rounded mb-2 hover:bg-orange-600 transition">Copiar Relatório</button>
+
+          <div class="flex justify-between mb-4">
+            <button id="btnReprovado" class="border border-red-500 text-red-500 text-xs rounded px-2 py-1 w-[48%] transition">Candidato Reprovado</button>
+            <button id="btnAprovado" class="border border-green-500 text-green-500 text-xs rounded px-2 py-1 w-[48%] transition">Candidato Aprovado</button>
+          </div>
+
+          <div class="flex justify-between mt-auto">
+            <button id="btnExcluirCandidato" class="bg-red-600 text-white text-xs p-2 rounded w-[48%] hover:bg-red-700 transition">Excluir Candidato</button>
+            <button id="btnSalvarCandidato" class="bg-green-600 text-white text-xs p-2 rounded w-[48%] hover:bg-green-700 transition">Salvar Candidato</button>
+          </div>
         </div>
 
-
-
-
-
-        
       </div>
     </main>
+  </div>
+
+  <!-- POPUP -->
+  <div id="popupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="popupBox" class="bg-white rounded-lg shadow-lg p-4 w-96">
+      <h3 id="popupTitle" class="font-semibold text-gray-800 text-sm mb-2"></h3>
+      <p id="popupMessage" class="text-xs text-gray-600 mb-4"></p>
+      <div class="flex justify-end space-x-2">
+        <button id="popupCancel" class="bg-gray-300 text-gray-700 text-xs px-3 py-1 rounded hover:bg-gray-400 transition">Cancelar</button>
+        <button id="popupConfirm" class="bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition">Confirmo</button>
+      </div>
+    </div>
   </div>
 
   <script src="script-candidatos.js"></script>

@@ -236,3 +236,58 @@ body.resizing { cursor: col-resize; }
 }
 
 /* Area Avaliacao ===================================================== */
+/* Base */
+
+.font-comfortaa { font-family: 'Comfortaa', cursive; }
+
+/* Grid e Disciplinas reduzidas */
+.disciplinas-section.reduzida { padding: 0.5rem; }
+.disciplinas-section.reduzida h3 { font-size: 0.75rem; margin-bottom: 0.25rem; }
+.grid-disciplinas-scroll { display: grid; grid-template-columns: repeat(6,1fr); gap: 0.4rem; overflow-y: auto; max-height: 100px; }
+.disciplina-item { display:flex; flex-direction:column; align-items:center; background:#fafafa; border:1px solid #eee; padding:0.3rem; border-radius:6px; min-height:50px; max-width:100px; }
+.disciplina-item img { width:60px; height:auto; margin-bottom:0.2rem; }
+.disciplina-item .disc-title { font-size:0.65rem; text-align:center; }
+
+/* Informações e Experiências scroll interno */
+#informacoesCandidato { overflow-y: auto; padding-right:6px; }
+#experienciasConteudo { max-height: 250px; overflow-y: auto; padding-right:4px; }
+#experienciasConteudo::-webkit-scrollbar, #informacoesCandidato::-webkit-scrollbar { width:6px; }
+#experienciasConteudo::-webkit-scrollbar-thumb, #informacoesCandidato::-webkit-scrollbar-thumb { background:#bbb; border-radius:4px; }
+
+/* Avaliação: opções coloridas */
+#statusCandidato { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+#statusCandidato option[value="Candidato"] { color:#374151; }
+#statusCandidato option[value="Reprovado"] { color:#dc2626; }
+#statusCandidato option[value="Aprovado"] { color:#16a34a; }
+
+/* Botões aprov/reprov - estados ativos (aplicados via JS) */
+.btn-active-success { background-color:#16a34a !important; color:#fff !important; border-color:#16a34a !important; }
+.btn-active-danger  { background-color:#dc2626 !important; color:#fff !important; border-color:#dc2626 !important; }
+
+/* Toast */
+.toast-message {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #111827;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  z-index: 1100;
+  animation: toastAnim 2s ease-in-out forwards;
+}
+@keyframes toastAnim {
+  0% { opacity:0; transform: translate(-50%, -60%); }
+  10% { opacity:1; transform: translate(-50%, -50%); }
+  85% { opacity:1; transform: translate(-50%, -50%); }
+  100% { opacity:0; transform: translate(-50%, -40%); }
+}
+
+/* Popup overlay show */
+#popupOverlay.show { display:flex !important; animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+/* Pequenos ajustes visuais */
+textarea#impressoesCandidato { min-height: 120px; } /* será ajustado via JS também */

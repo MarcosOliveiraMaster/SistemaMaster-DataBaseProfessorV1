@@ -15,6 +15,9 @@ let db = null;
 let candidatos = [];
 let candidatoSelecionado = null;
 
+// Valor configurável para altura da textarea de avaliação (padrão em px ou string CSS)
+const AVALIACAO_TEXTAREA_HEIGHT = "180px"; // altere aqui quando quiser ajustar sem editar HTML
+
 // ==============================
 // INICIALIZAÇÃO FIREBASE
 // ==============================
@@ -32,7 +35,45 @@ function initializeFirebase() {
 }
 
 // ==============================
+// UTILITÁRIOS: Toast, Popup
+// ==============================
+function mostrarToast(mensagem) {
+  const toast = document.createElement("div");
+  toast.className = "toast-message";
+  toast.textContent = mensagem;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 2000);
+}
+
+function abrirPopup(titulo, mensagem, acaoConfirmar, confirmLabel = "Confirmo", cancelLabel = "Cancelar") {
+  const overlay = document.getElementById("popupOverlay");
+  const popupTitle = document.getElementById("popupTitle");
+  const popupMessage = document.getElementById("popupMessage");
+  const btnConfirm = document.getElementById("popupConfirm");
+  const btnCancel = document.getElementById("popupCancel");
+
+  popupTitle.textContent = titulo;
+  popupMessage.textContent = mensagem;
+  btnConfirm.textContent = confirmLabel;
+  btnCancel.textContent = cancelLabel;
+
+  overlay.classList.add("show");
+
+  btnConfirm.onclick = () => {
+    overlay.classList.remove("show");
+    if (typeof acaoConfirmar === "function") acaoConfirmar();
+  };
+
+  btnCancel.onclick = () => {
+    overlay.classList.remove("show");
+  };
+}
+
+// ==============================
 // CARREGAR CANDIDATOS
+// (preserva lógica anterior)
 // ==============================
 async function carregarCandidatos() {
   try {
@@ -52,9 +93,6 @@ async function carregarCandidatos() {
   }
 }
 
-// ==============================
-// LISTAGEM E FILTROS
-// ==============================
 function preencherFiltroDisciplinas() {
   const select = document.getElementById("filtroDisciplina");
   const disciplinas = new Set();
@@ -64,14 +102,12 @@ function preencherFiltroDisciplinas() {
       c.disciplinas.forEach(d => disciplinas.add(d));
   });
 
-  Array.from(disciplinas)
-    .sort()
-    .forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d;
-      select.appendChild(opt);
-    });
+  Array.from(disciplinas).sort().forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    select.appendChild(opt);
+  });
 }
 
 function renderizarListaCandidatos(lista = candidatos) {
@@ -90,7 +126,7 @@ function renderizarListaCandidatos(lista = candidatos) {
       "p-2 border-b cursor-pointer hover:bg-orange-50 transition";
     item.innerHTML = `
       <div class="font-medium text-gray-800 text-sm">${c.nome}</div>
-      <div class="text-xs text-gray-500">${c.status}</div>
+      <div class="text-xs text-gray-500">${c.status || "Candidato"}</div>
     `;
     item.onclick = () => selecionarCandidato(c);
     container.appendChild(item);
@@ -117,6 +153,7 @@ function selecionarCandidato(c) {
   exibirDisciplinas();
   exibirInformacoes();
   exibirExperiencias();
+  preencherAreaAvaliacao();
 }
 
 function exibirDisponibilidade() {
@@ -131,29 +168,26 @@ function exibirDisponibilidade() {
       if (!el) return;
       const val = candidatoSelecionado[id];
       el.textContent = val ? "✅" : "❌";
-      el.className = `p-1 text-center ${
-        val ? "text-green-600" : "text-red-500"
-      }`;
+      el.className = `p-1 text-center ${val ? "text-green-600" : "text-red-500"}`;
     });
   });
 }
 
 const imagensDisciplinas = {
-    "Matemática": "/img-disciplinas/mat.png",
-    "Português": "/img-disciplinas/port.png",
-    "Física": "/img-disciplinas/fis.png",
-    "Química": "/img-disciplinas/qui.png",
-    "Biologia": "/img-disciplinas/bio.png",
-    "Ciências": "/img-disciplinas/cienc.png",
-    "Geografia": "/img-disciplinas/geo.png",
-    "História": "/img-disciplinas/hist.png",
-    "Inglês": "/img-disciplinas/engl.png",
-    "Literatura": "/img-disciplinas/humanas.png",
-    "Pedagogia": "/img-disciplinas/humanas.png",
-    "Redação": "/img-disciplinas/humanas.png",
-    "Sociologia": "/img-disciplinas/humanas.png",
-    "Filosofia": "/img-disciplinas/humanas.png"
-    
+  "Matemática": "/img-disciplinas/mat.png",
+  "Português": "/img-disciplinas/port.png",
+  "Física": "/img-disciplinas/fis.png",
+  "Química": "/img-disciplinas/qui.png",
+  "Biologia": "/img-disciplinas/bio.png",
+  "Ciências": "/img-disciplinas/cienc.png",
+  "Geografia": "/img-disciplinas/geo.png",
+  "História": "/img-disciplinas/hist.png",
+  "Inglês": "/img-disciplinas/engl.png",
+  "Literatura": "/img-disciplinas/humanas.png",
+  "Pedagogia": "/img-disciplinas/humanas.png",
+  "Redação": "/img-disciplinas/humanas.png",
+  "Sociologia": "/img-disciplinas/humanas.png",
+  "Filosofia": "/img-disciplinas/humanas.png"
 };
 
 function exibirDisciplinas() {
@@ -241,27 +275,48 @@ function exibirExperiencias() {
 }
 
 // ==============================
-// AVALIAÇÃO
+// AVALIAÇÃO: preencher área e salvar impressões
 // ==============================
+function preencherAreaAvaliacao() {
+  const txt = document.getElementById("impressoesCandidato");
+  const status = document.getElementById("statusCandidato");
+
+  if (!candidatoSelecionado) {
+    txt.value = "";
+    status.value = "Candidato";
+    atualizarVisualStatus("Candidato");
+    return;
+  }
+
+  txt.value = candidatoSelecionado.ImpressoesCandidatos || "";
+  status.value = candidatoSelecionado.status || "Candidato";
+  atualizarVisualStatus(status.value);
+}
+
+// Salvar impressões no Firestore
 async function salvarImpressoes() {
-  if (!candidatoSelecionado) return;
+  if (!candidatoSelecionado) return mostrarToast("Nenhum candidato selecionado.");
   const texto = document.getElementById("impressoesCandidato").value;
+  const novoStatus = document.getElementById("statusCandidato").value;
 
   try {
-    await db
-      .collection("candidatos")
-      .doc(candidatoSelecionado.id)
-      .update({ ImpressoesCandidatos: texto });
+    await db.collection("candidatos").doc(candidatoSelecionado.id).update({
+      ImpressoesCandidatos: texto,
+      status: novoStatus
+    });
     candidatoSelecionado.ImpressoesCandidatos = texto;
-    mostrarMensagem("Impressões salvas!");
+    candidatoSelecionado.status = novoStatus;
+    mostrarToast("Impressões salvas!");
+    // atualizar lista visual
+    renderizarListaCandidatos();
   } catch (error) {
     console.error("Erro ao salvar impressões:", error);
-    mostrarMensagem("Erro ao salvar!", true);
+    mostrarToast("Erro ao salvar!");
   }
 }
 
 // ==============================
-// UTILITÁRIOS
+// FUNÇÕES AUXILIARES (formatação CPF etc.)
 // ==============================
 function formatarCPF(cpf) {
   if (!cpf) return "";
@@ -271,33 +326,138 @@ function formatarCPF(cpf) {
     : cpf;
 }
 
-function mostrarMensagem(msg, erro = false) {
-  const box = document.createElement("div");
-  box.className = `fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 ${
-    erro ? "bg-red-500" : "bg-green-500"
-  } text-white text-sm`;
-  box.textContent = msg;
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), 2500);
+// ==============================
+// CONTROLES DA UI: botões de avaliação, copiar relatório, status
+// ==============================
+function atualizarVisualStatus(statusValue) {
+  const select = document.getElementById("statusCandidato");
+  // ajustar borda/texto para indicar status
+  select.classList.remove("border-red-500", "text-red-500", "border-green-500", "text-green-500", "text-gray-700");
+  if (statusValue === "Reprovado") {
+    select.classList.add("border-red-500", "text-red-500");
+  } else if (statusValue === "Aprovado") {
+    select.classList.add("border-green-500", "text-green-500");
+  } else {
+    select.classList.add("text-gray-700");
+  }
+}
+
+// copiar relatório para clipboard (aqui gera texto simplificado)
+async function copiarRelatorioParaClipboard() {
+  if (!candidatoSelecionado) return mostrarToast("Nenhum candidato selecionado.");
+  const texto = `
+Relatório - Candidato: ${candidatoSelecionado.nome || ""}
+Status: ${document.getElementById("statusCandidato").value || ""}
+Impressões: ${document.getElementById("impressoesCandidato").value || ""}
+  `.trim();
+  try {
+    await navigator.clipboard.writeText(texto);
+    mostrarToast("Mensagem copiada!");
+  } catch (e) {
+    console.error("Erro ao copiar:", e);
+    mostrarToast("Não foi possível copiar.");
+  }
+}
+
+// Botões aprov/reprov toggles
+function setBotaoAprovado() {
+  const btnA = document.getElementById("btnAprovado");
+  const btnR = document.getElementById("btnReprovado");
+  btnA.classList.add("btn-active-success");
+  btnR.classList.remove("btn-active-danger");
+  document.getElementById("statusCandidato").value = "Aprovado";
+  atualizarVisualStatus("Aprovado");
+  mostrarToast("Candidato marcado como APROVADO");
+}
+
+function setBotaoReprovado() {
+  const btnA = document.getElementById("btnAprovado");
+  const btnR = document.getElementById("btnReprovado");
+  btnR.classList.add("btn-active-danger");
+  btnA.classList.remove("btn-active-success");
+  document.getElementById("statusCandidato").value = "Reprovado";
+  atualizarVisualStatus("Reprovado");
+  mostrarToast("Candidato marcado como REPROVADO");
+}
+
+// Excluir / Salvar candidato — gatilhos para popups e callbacks externos
+function functionExcluirCandidato() {
+  // placeholder: ação real deve ser implementada posteriormente
+  mostrarToast("Função excluir chamada (a implementar).");
+  // exemplo: db.collection('candidatos').doc(candidatoSelecionado.id).delete()
+}
+
+function functionSalvarCandidato() {
+  // placeholder
+  mostrarToast("Função salvar chamada (a implementar).");
+  // exemplo: mover para outra coleção ou marcar como oficial
 }
 
 // ==============================
-// EVENTOS INICIAIS
+// EVENTOS INICIAIS E BINDINGS
 // ==============================
 function inicializarApp() {
-  document
-    .getElementById("filtroStatus")
-    .addEventListener("change", aplicarFiltros);
-  document
-    .getElementById("filtroDisciplina")
-    .addEventListener("change", aplicarFiltros);
-  document
-    .getElementById("btnSalvarImpressoes")
-    .addEventListener("click", salvarImpressoes);
+  // Bind filtros
+  document.getElementById("filtroStatus").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroDisciplina").addEventListener("change", aplicarFiltros);
 
+  // Ajuste dinâmico da altura da textarea via constante JS
+  const txt = document.getElementById("impressoesCandidato");
+  if (txt) txt.style.minHeight = AVALIACAO_TEXTAREA_HEIGHT;
+
+  // Botões avaliação
+  document.getElementById("btnSalvarImpressoes")?.addEventListener("click", salvarImpressoes); // se existir (compatibilidade)
+  // Nosso botão local de salvar candidato (section avaliação) mantém confirmação via popup
+  document.getElementById("btnExcluirCandidato").addEventListener("click", () => {
+    abrirPopup(
+      "Confirmação de exclusão",
+      "Ao confirmar a exclusão, todos os dados deste candidato serão apagados permanentemente do banco de dados e não poderão ser recuperados. Tem certeza que deseja continuar?",
+      () => { functionExcluirCandidato(); },
+      "Confirmo",
+      "Cancelar"
+    );
+  });
+  document.getElementById("btnSalvarCandidato").addEventListener("click", () => {
+    abrirPopup(
+      "Salvar candidato",
+      "Ao clicar em salvar, este candidato será adicionado ao banco oficial de professores da Master. Tem certeza disso?",
+      () => { functionSalvarCandidato(); },
+      "Salvar",
+      "Cancelar"
+    );
+  });
+
+  // Copiar relatório
+  document.getElementById("btnCopiarRelatorio").addEventListener("click", copiarRelatorioParaClipboard);
+
+  // Botões aprov/reprov
+  document.getElementById("btnAprovado").addEventListener("click", setBotaoAprovado);
+  document.getElementById("btnReprovado").addEventListener("click", setBotaoReprovado);
+
+  // status select change -> atualiza visual
+  document.getElementById("statusCandidato").addEventListener("change", (e) => {
+    atualizarVisualStatus(e.target.value);
+    // sincroniza botões visuais
+    if (e.target.value === "Aprovado") {
+      document.getElementById("btnAprovado").classList.add("btn-active-success");
+      document.getElementById("btnReprovado").classList.remove("btn-active-danger");
+    } else if (e.target.value === "Reprovado") {
+      document.getElementById("btnReprovado").classList.add("btn-active-danger");
+      document.getElementById("btnAprovado").classList.remove("btn-active-success");
+    } else {
+      document.getElementById("btnAprovado").classList.remove("btn-active-success");
+      document.getElementById("btnReprovado").classList.remove("btn-active-danger");
+    }
+  });
+
+  // Carregar candidatos
   carregarCandidatos();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   if (initializeFirebase()) inicializarApp();
+  else {
+    // mesmo sem Firebase, inicializa ajustes UI
+    inicializarApp();
+  }
 });
