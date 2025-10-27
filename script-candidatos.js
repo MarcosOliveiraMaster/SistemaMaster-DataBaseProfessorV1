@@ -350,7 +350,7 @@ function exibirDisciplinas() {
     const item = document.createElement("div");
     item.className = "disciplina-item";
     const img = document.createElement("img");
-    img.src = imagensDisciplinas[d] || "../img/default.png";
+    img.src = imagensDisciplinas[d] || "/img-disciplinas/default.png";
     img.alt = d;
     const title = document.createElement("div");
     title.className = "disc-title";
