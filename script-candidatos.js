@@ -634,9 +634,60 @@ async function excluirCandidato() {
   }
 }
 
-function functionSalvarCandidato() {
-  // placeholder para função existente
-  mostrarToast("Função salvar candidato chamada");
+// Função para salvar candidato como professor ativo
+async function functionSalvarCandidato() {
+  if (!candidatoSelecionado) {
+    mostrarToast("Nenhum candidato selecionado.");
+    return;
+  }
+
+  try {
+    // 1. Criar cópia do candidato
+    const dadosProfessor = { ...candidatoSelecionado };
+    
+    // 2. Remover campos específicos
+    const camposParaRemover = [
+      'dataEntrevista',
+      'ImpressoesCandidatos', 
+      'linkEntrevista',
+      'id'
+    ];
+    
+    camposParaRemover.forEach(campo => {
+      delete dadosProfessor[campo];
+    });
+    
+    // 3. Converter disciplinas para formato texto
+    if (Array.isArray(dadosProfessor.disciplinas)) {
+      dadosProfessor.disciplinas = dadosProfessor.disciplinas.join(", ");
+    } else if (dadosProfessor.disciplinas) {
+      // Se já for string, garantir que está formatada corretamente
+      dadosProfessor.disciplinas = dadosProfessor.disciplinas.toString();
+    }
+    
+    // 4. Atualizar status e adicionar metadados
+    dadosProfessor.status = "Ativo";
+    dadosProfessor.dataAtivacao = new Date().toLocaleString('pt-BR');
+    
+    // 5. Salvar na nova coleção
+    await db.collection("dataBaseProfessores").add(dadosProfessor);
+    
+    mostrarToast("✅ Candidato promovido a professor ativo com sucesso!");
+    
+    // 6. Atualizar candidato original
+    await db.collection("candidatos").doc(candidatoSelecionado.id).update({
+      status: "Promovido a Professor"
+    });
+    
+    // 7. Atualizar interface
+    candidatoSelecionado.status = "Promovido a Professor";
+    renderizarListaCandidatos();
+    preencherAreaAvaliacao();
+    
+  } catch (error) {
+    console.error("Erro ao salvar candidato como professor:", error);
+    mostrarToast("❌ Erro ao salvar candidato como professor!");
+  }
 }
 
 // ==============================
@@ -687,10 +738,10 @@ function inicializarApp() {
   // Botão salvar candidato
   document.getElementById("btnSalvarCandidato").addEventListener("click", () => {
     abrirPopup(
-      "Salvar candidato",
-      "Ao clicar em salvar, este candidato será adicionado ao banco oficial de professores da Master. Tem certeza disso?",
+      "Promover a Professor",
+      "Ao confirmar, este candidato será adicionado ao banco oficial de professores ativos da Master. Os campos 'Data da Entrevista' e 'Comentários do Avaliador' serão removidos, e o status será alterado para 'Ativo'. Deseja continuar?",
       () => { functionSalvarCandidato(); },
-      "Salvar",
+      "Promover a Professor",
       "Cancelar"
     );
   });
