@@ -320,20 +320,20 @@ function exibirDisponibilidade() {
 }
 
 const imagensDisciplinas = {
-  "Matemática": "img-disciplinas/port.png",
-  "Português": "../img-disciplinas/port.png",
-  "Física": "../img-disciplinas/fis.png",
-  "Química": "../img-disciplinas/qui.png",
-  "Biologia": "../img-disciplinas/bio.png",
-  "Ciências": "../img-disciplinas/cienc.png",
-  "Geografia": "../img-disciplinas/geo.png",
-  "História": "../img-disciplinas/hist.png",
-  "Inglês": "../img-disciplinas/engl.png",
-  "Literatura": "../img-disciplinas/humanas.png",
-  "Pedagogia": "../img-disciplinas/humanas.png",
-  "Redação": "../img-disciplinas/humanas.png",
-  "Sociologia": "../img-disciplinas/humanas.png",
-  "Filosofia": "../img-disciplinas/humanas.png"
+  "Matemática": "/img-disciplinas/mat.png",
+  "Português": "/img-disciplinas/port.png",
+  "Física": "/img-disciplinas/fis.png",
+  "Química": "/img-disciplinas/qui.png",
+  "Biologia": "/img-disciplinas/bio.png",
+  "Ciências": "/img-disciplinas/cienc.png",
+  "Geografia": "/img-disciplinas/geo.png",
+  "História": "/img-disciplinas/hist.png",
+  "Inglês": "/img-disciplinas/engl.png",
+  "Literatura": "/img-disciplinas/humanas.png",
+  "Pedagogia": "/img-disciplinas/humanas.png",
+  "Redação": "/img-disciplinas/humanas.png",
+  "Sociologia": "/img-disciplinas/humanas.png",
+  "Filosofia": "/img-disciplinas/humanas.png"
 };
 
 function exibirDisciplinas() {
@@ -350,7 +350,7 @@ function exibirDisciplinas() {
     const item = document.createElement("div");
     item.className = "disciplina-item";
     const img = document.createElement("img");
-    img.src = imagensDisciplinas[d] || "../img/default.png";
+    img.src = imagensDisciplinas[d] || "/img-disciplinas/default.png";
     img.alt = d;
     const title = document.createElement("div");
     title.className = "disc-title";
