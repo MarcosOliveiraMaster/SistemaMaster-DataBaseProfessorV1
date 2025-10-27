@@ -291,3 +291,127 @@ body.resizing { cursor: col-resize; }
 
 /* Pequenos ajustes visuais */
 textarea#impressoesCandidato { min-height: 120px; } /* será ajustado via JS também */
+
+/* Atualizações */
+/* Adicionar ao final do arquivo style.css existente */
+
+/* Estilos para os novos elementos */
+
+/* Data entrevista input */
+#dataEntrevista {
+  font-family: monospace;
+}
+
+/* Lista de meses */
+#listaMeses {
+  max-height: 100px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  background: white;
+  z-index: 10;
+}
+
+/* Botões ativos */
+.btn-active-success {
+  background-color: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+.btn-active-danger {
+  background-color: #dc2626 !important;
+  color: white !important;
+  border-color: #dc2626 !important;
+}
+
+/* Toast message */
+.toast-message {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #111827;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  z-index: 1100;
+  animation: toastAnim 2s ease-in-out forwards;
+}
+
+@keyframes toastAnim {
+  0% { opacity: 0; transform: translate(-50%, -60%); }
+  10% { opacity: 1; transform: translate(-50%, -50%); }
+  85% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -40%); }
+}
+
+/* Popup overlay show */
+#popupOverlay.show {
+  display: flex !important;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+/* Ajustes para o textarea de comentários do avaliador */
+#impressoesCandidato {
+  min-height: 100px !important;
+  height: 100px !important;
+  resize: none !important;
+  overflow-y: auto !important;
+}
+
+/* Personalizar a scrollbar do textarea */
+#impressoesCandidato::-webkit-scrollbar {
+  width: 6px;
+}
+
+#impressoesCandidato::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+#impressoesCandidato::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+#impressoesCandidato::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Fonte padrão para o campo dataEntrevista */
+#dataEntrevista {
+  font-family: 'Lexend', sans-serif !important;
+}
+
+/* Scroll garantido para a lista de candidatos */
+#listaCandidatos {
+  min-height: 200px;
+  max-height: 60vh;
+  overflow-y: auto !important;
+}
+
+/* Personalizar scrollbar da lista de candidatos */
+#listaCandidatos::-webkit-scrollbar {
+  width: 6px;
+}
+
+#listaCandidatos::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+#listaCandidatos::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+#listaCandidatos::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
