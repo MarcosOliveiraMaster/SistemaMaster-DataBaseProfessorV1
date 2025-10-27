@@ -320,7 +320,7 @@ function exibirDisponibilidade() {
 }
 
 const imagensDisciplinas = {
-  "Matemática": "../img-disciplinas/mat.png",
+  "Matemática": "img-disciplinas/port.png",
   "Português": "../img-disciplinas/port.png",
   "Física": "../img-disciplinas/fis.png",
   "Química": "../img-disciplinas/qui.png",
