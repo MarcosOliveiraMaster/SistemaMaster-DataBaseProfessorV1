@@ -23,7 +23,7 @@ Ficamos impressionados com sua didática e paixão pelo ensino. Estamos ansiosos
 
 Entre no Link abaixo para  participar no nosso grupo de professores. Enviamos solicitações de aulas no privado, porém quando surge solicitação emergencial nós enviamos no grupo:
 
-https://chat.whatsapp.com/COtoCfpTIuoDs7f8UgQHIz
+https://chat.whatsapp.com/Km8Ap56yusNKef1W5d6aMS
 
 
 Vamos encaminhar o manual de Tutores Master, com todas as informações sobre a Empresa e boas práticas. Entraremos em contato para alinhar os detalhes e próximos passos. 🚀
