@@ -1,4 +1,4 @@
-// script.js — versão adaptada para Firebase Firestore
+// script.js — versão corrigida para dataBaseProfessores
 
 // ---------------- FIREBASE CONFIG ----------------
 const FIREBASE_CONFIG = {
@@ -38,6 +38,8 @@ function initializeFirebase() {
 
 // ---------------- GLOBAIS ----------------
 const MASKS_STORAGE_KEY = 'tableColumnMasks';
+const COLUMN_ORDER_KEY = 'tableColumnOrder';
+
 const defaultMasks = {
     nome: 'Nome Professor',
     cpf: 'CPF',
@@ -53,6 +55,8 @@ const defaultMasks = {
     expTdics: 'Experiência com Tecnologias Educacionais',
     descricaoTdics: 'Descrição da Experiência com Tecnologias Educacionais',
     pix: 'Chave Pix',
+    status: 'Status',
+    dataAtivacao: 'Data de Ativação'
 };
 
 function loadMasks() {
@@ -71,10 +75,27 @@ function saveMasks(masks) {
     } catch (e) { console.warn('Erro ao salvar máscaras:', e); }
 }
 
+function loadColumnOrder() {
+    try {
+        const raw = localStorage.getItem(COLUMN_ORDER_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) { 
+        console.warn('Erro ao carregar ordem das colunas:', e);
+        return [];
+    }
+}
+
+function saveColumnOrder(order) {
+    try {
+        localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(order));
+    } catch (e) { console.warn('Erro ao salvar ordem das colunas:', e); }
+}
+
 let masks = loadMasks();
 let dadosTabela = null;
 let colunasDisponiveis = [];
 let colunasSelecionadas = [];
+let colunasOrdemPersonalizada = loadColumnOrder();
 let dadosAlterados = new Map();
 let colWidths = {};
 let sortState = { column: null, dir: null };
@@ -108,8 +129,35 @@ function salvarColWidths() {
     try { localStorage.setItem('colWidths_v1', JSON.stringify(colWidths)); } catch (e) {}
 }
 
-function salvarPreferencias() { localStorage.setItem('colunasSelecionadas', JSON.stringify(colunasSelecionadas)); }
-function carregarPreferencias() { const s = localStorage.getItem('colunasSelecionadas'); if (s) colunasSelecionadas = JSON.parse(s); }
+function salvarPreferencias() { 
+    localStorage.setItem('colunasSelecionadas', JSON.stringify(colunasSelecionadas)); 
+}
+
+function carregarPreferencias() { 
+    const s = localStorage.getItem('colunasSelecionadas'); 
+    if (s) colunasSelecionadas = JSON.parse(s); 
+}
+
+// ---------------- FUNÇÃO SIMPLIFICADA DE ORDENAÇÃO ----------------
+function aplicarOrdemColunas(colunas) {
+    if (colunasOrdemPersonalizada.length === 0) {
+        return colunas;
+    }
+    
+    // Filtrar apenas as colunas que estão tanto na ordem personalizada quanto nas selecionadas
+    const colunasOrdenadas = colunasOrdemPersonalizada.filter(col => 
+        colunas.includes(col)
+    );
+    
+    // Adicionar quaisquer colunas que não estão na ordem personalizada
+    colunas.forEach(col => {
+        if (!colunasOrdenadas.includes(col)) {
+            colunasOrdenadas.push(col);
+        }
+    });
+    
+    return colunasOrdenadas;
+}
 
 // ---------------- INICIALIZAÇÃO ----------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -118,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const s = document.getElementById('subtitulo');
     if (s) s.innerText = subtitulo;
     
-    // Inicializar Firebase primeiro
     if (initializeFirebase()) {
         carregarPreferencias();
         carregarColWidths();
@@ -129,22 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function inicializarApp() {
-    // seções
+    // Configuração de eventos
     document.getElementById('btnSec1')?.addEventListener('click', () => trocarSecao(1));
-    document.getElementById('btnSec2')?.addEventListener('click', () => trocarSecao(2));
-    document.getElementById('btnSec3')?.addEventListener('click', () => trocarSecao(3));
-
-    // listener nas checkboxes de disciplinas
+    
     document.querySelectorAll('input[name="filtroDisciplinas"]').forEach(cb => {
         cb.addEventListener('change', () => aplicarFiltros());
     });
 
-    // listener nas checkboxes de categorias
     document.querySelectorAll('input[name="filtroCategorias"]').forEach(cb => {
         cb.addEventListener('change', () => aplicarFiltros());
     });
 
-    // dropdowns toggles
+    // Dropdowns
     document.getElementById('dropdownToggle')?.addEventListener('click', (e) => {
         e.stopPropagation();
         document.getElementById('dropdownMenu')?.classList.toggle('hidden');
@@ -162,7 +205,7 @@ function inicializarApp() {
         document.getElementById('diasTurnosMenu')?.classList.toggle('hidden');
     });
 
-    // fechar menus clicando fora
+    // Fechar menus ao clicar fora
     document.addEventListener('click', (e) => {
         const menus = [
             { btn: 'dropdownToggle', menu: 'dropdownMenu' },
@@ -180,25 +223,23 @@ function inicializarApp() {
         });
     });
 
-    // montar dias/turnos
     montarDiasTurnos();
 
-    // botões principais
+    // Botões
     document.getElementById('btn1')?.addEventListener('click', salvarAlteracoes);
     document.getElementById('limparBusca')?.addEventListener('click', limparFiltros);
 
-    // filtros texto
+    // Filtros de texto
     const inputNome = document.getElementById('filtroNome');
     const inputBairro = document.getElementById('filtroBairro');
     const aplicarDebounced = debounce(() => aplicarFiltros(), 160);
     inputNome?.addEventListener('input', aplicarDebounced);
     inputBairro?.addEventListener('input', aplicarDebounced);
 
-    // redimensionamento global
+    // Redimensionamento
     document.addEventListener('mousemove', redimensionarColuna);
     document.addEventListener('mouseup', pararRedimensionamento);
 
-    // carregar dados
     carregarDadosFirebase();
 }
 
@@ -216,7 +257,7 @@ async function carregarDadosFirebase() {
             throw new Error('Firebase não inicializado');
         }
 
-        const snapshot = await db.collection('candidatos').get();
+        const snapshot = await db.collection('dataBaseProfessores').get();
         const data = snapshot.docs.map(doc => ({ 
             id: doc.id, 
             ...doc.data() 
@@ -225,26 +266,26 @@ async function carregarDadosFirebase() {
         if (data && data.length > 0) {
             dadosTabela = data;
             
-            // Obter colunas disponíveis, excluindo as ocultas e as de dias/turnos
             const todasColunas = Object.keys(data[0]);
             colunasDisponiveis = todasColunas.filter(c => 
                 !colunasOcultas.includes(c) && !colunasDiasTurnos.includes(c)
             );
             
-            // Adicionar a coluna "Disponibilidade" como uma coluna virtual
             colunasDisponiveis.push('Disponibilidade');
             
-            // Se não há colunas selecionadas, definir padrão (todas exceto dias/turnos)
             if (colunasSelecionadas.length === 0) {
                 colunasSelecionadas = [...colunasDisponiveis];
             }
+
+            // Aplicar ordem personalizada
+            colunasSelecionadas = aplicarOrdemColunas(colunasSelecionadas);
             
             criarDropdownColunas();
             aplicarFiltros();
         } else {
             dadosTabela = [];
             const tbody = document.querySelector('#tabela-dados tbody');
-            if (tbody) tbody.innerHTML = '<tr><td colspan="100%" class="px-6 py-4 text-center text-gray-500">Nenhum dado encontrado</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="100%" class="px-6 py-4 text-center text-gray-500">Nenhum professor encontrado</td></tr>';
         }
     } catch (err) {
         console.error('Erro carregar dados Firebase:', err);
@@ -255,16 +296,19 @@ async function carregarDadosFirebase() {
 
 function showLoadingState() {
     const tbody = document.querySelector('#tabela-dados tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="100%" class="px-6 py-4 text-center text-gray-500">Carregando dados...</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="100%" class="px-6 py-4 text-center text-gray-500">Carregando professores...</td></tr>';
 }
 
-// ---------------- DROPDOWN COLUNAS ----------------
+// ---------------- DROPDOWN COLUNAS SIMPLIFICADO ----------------
 function criarDropdownColunas() {
     const columnsList = document.getElementById('columnsList');
     if (!columnsList) return;
     columnsList.innerHTML = '';
 
-    colunasDisponiveis.forEach(coluna => {
+    // Ordenar colunas pela ordem personalizada
+    const colunasOrdenadas = aplicarOrdemColunas([...colunasDisponiveis]);
+
+    colunasOrdenadas.forEach(coluna => {
         const div = document.createElement('div');
         div.className = 'px-4 py-2 text-sm text-gray-700 hover:bg-gray-100';
 
@@ -273,12 +317,28 @@ function criarDropdownColunas() {
 
         const input = document.createElement('input');
         input.type = 'checkbox';
-        input.className = 'coluna-checkbox rounded border-gray-300 text-orange-600 shadow-sm';
+        input.className = 'coluna-checkbox rounded border-gray-300 text-orange-600 shadow-sm mr-2';
         input.value = coluna;
         input.checked = colunasSelecionadas.includes(coluna);
 
         input.addEventListener('change', () => {
-            colunasSelecionadas = Array.from(document.querySelectorAll('.coluna-checkbox:checked')).map(i => i.value);
+            if (input.checked) {
+                // Adicionar à seleção e à ordem personalizada
+                if (!colunasSelecionadas.includes(coluna)) {
+                    colunasSelecionadas.push(coluna);
+                }
+                if (!colunasOrdemPersonalizada.includes(coluna)) {
+                    colunasOrdemPersonalizada.push(coluna);
+                    saveColumnOrder(colunasOrdemPersonalizada);
+                }
+            } else {
+                // Remover da seleção mas manter na ordem
+                colunasSelecionadas = colunasSelecionadas.filter(c => c !== coluna);
+            }
+
+            // Reaplicar ordem
+            colunasSelecionadas = aplicarOrdemColunas(colunasSelecionadas);
+            
             const selectAll = document.getElementById('selectAllColumns');
             if (selectAll) {
                 selectAll.checked = colunasSelecionadas.length === colunasDisponiveis.length;
@@ -289,7 +349,7 @@ function criarDropdownColunas() {
         });
 
         const span = document.createElement('span');
-        span.className = 'ml-2 truncate';
+        span.className = 'truncate';
         span.textContent = (masks && masks[coluna]) ? masks[coluna] : coluna;
 
         label.appendChild(input);
@@ -302,57 +362,28 @@ function criarDropdownColunas() {
     if (selectAll) {
         selectAll.checked = colunasSelecionadas.length === colunasDisponiveis.length;
         selectAll.indeterminate = colunasSelecionadas.length > 0 && colunasSelecionadas.length < colunasDisponiveis.length;
+        
         selectAll.onchange = () => {
-            colunasSelecionadas = selectAll.checked ? [...colunasDisponiveis] : [];
-            document.querySelectorAll('.coluna-checkbox').forEach(cb => cb.checked = selectAll.checked);
+            if (selectAll.checked) {
+                colunasSelecionadas = [...colunasDisponiveis];
+                // Atualizar ordem personalizada com todas as colunas
+                colunasOrdemPersonalizada = [...colunasSelecionadas];
+                saveColumnOrder(colunasOrdemPersonalizada);
+            } else {
+                colunasSelecionadas = [];
+            }
+            
+            document.querySelectorAll('.coluna-checkbox').forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            
             salvarPreferencias();
             aplicarFiltros();
         };
     }
 }
 
-// ---------------- FORMATAR DISPONIBILIDADE ----------------
-function formatarDisponibilidade(item) {
-    const diasMap = {
-        segManha: { dia: 'Segunda', turno: 'Manhã' },
-        segTarde: { dia: 'Segunda', turno: 'Tarde' },
-        terManha: { dia: 'Terça', turno: 'Manhã' },
-        terTarde: { dia: 'Terça', turno: 'Tarde' },
-        quaManha: { dia: 'Quarta', turno: 'Manhã' },
-        quaTarde: { dia: 'Quarta', turno: 'Tarde' },
-        quiManha: { dia: 'Quinta', turno: 'Manhã' },
-        quiTarde: { dia: 'Quinta', turno: 'Tarde' },
-        sexManha: { dia: 'Sexta', turno: 'Manhã' },
-        sexTarde: { dia: 'Sexta', turno: 'Tarde' },
-        sabManha: { dia: 'Sábado', turno: 'Manhã' },
-        sabTarde: { dia: 'Sábado', turno: 'Tarde' }
-    };
-
-    const disponibilidadePorDia = {};
-
-    Object.entries(diasMap).forEach(([chave, info]) => {
-        const valor = getFieldValue(item, chave);
-        if (isTruthyValue(valor)) {
-            if (!disponibilidadePorDia[info.dia]) {
-                disponibilidadePorDia[info.dia] = [];
-            }
-            disponibilidadePorDia[info.dia].push(info.turno);
-        }
-    });
-
-    const partes = [];
-    Object.entries(disponibilidadePorDia).forEach(([dia, turnos]) => {
-        if (turnos.length === 2) {
-            partes.push(`${dia}: Manhã e Tarde`);
-        } else if (turnos.length === 1) {
-            partes.push(`${dia}: ${turnos[0]}`);
-        }
-    });
-
-    return partes.join(', ');
-}
-
-// ---------------- TABELA (renderização) ----------------
+// ---------------- TABELA ----------------
 function criarTabela(dados) {
     const tabela = document.getElementById('tabela-dados');
     if (!tabela) return;
@@ -366,7 +397,7 @@ function criarTabela(dados) {
         !colunasOcultas.includes(col) && !colunasDiasTurnos.includes(col)
     );
 
-    // Cabeçalho com resize handle e sort
+    // Cabeçalho
     colunasParaExibir.forEach(coluna => {
         const th = document.createElement('th');
         th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative';
@@ -420,17 +451,13 @@ function criarTabela(dados) {
                 td.className = 'px-6 py-4 text-sm text-gray-900';
                 td.dataset.field = coluna;
 
-                // Coluna especial "Disponibilidade"
                 if (coluna === 'Disponibilidade') {
                     td.textContent = formatarDisponibilidade(item);
                 } 
-                // Formatação de CPF
                 else if (isCPFColumn(coluna)) {
                     const valor = getFieldValue(item, coluna) || '';
                     td.textContent = formatarCPF(valor);
-                    td.classList.add('celula-editavel');
                 }
-                // Formatação de Contato
                 else if (isContatoColumn(coluna)) {
                     const valor = getFieldValue(item, coluna) || '';
                     const numeroFormatado = formatarTelefone(valor);
@@ -440,11 +467,11 @@ function criarTabela(dados) {
                     
                     const span = document.createElement('span');
                     span.textContent = numeroFormatado;
-                    span.className = 'contato-whatsapp cursor-pointer';
+                    span.className = 'contato-whatsapp cursor-pointer hover:text-blue-600';
                     
                     const tooltip = document.createElement('div');
                     tooltip.className = 'whatsapp-tooltip hidden absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50';
-                    tooltip.textContent = 'Ir para WhatsApp';
+                    tooltip.textContent = 'Abrir WhatsApp';
                     
                     container.appendChild(span);
                     container.appendChild(tooltip);
@@ -470,24 +497,18 @@ function criarTabela(dados) {
                     td.textContent = '';
                     td.appendChild(container);
                 }
-                // Email clicável para copiar
                 else if (isEmailColumn(coluna)) {
                     const valor = getFieldValue(item, coluna) || '';
                     const span = document.createElement('span');
                     span.textContent = valor;
-                    span.className = 'cursor-pointer email-copiar copiar-generico';
+                    span.className = 'cursor-pointer email-copiar hover:text-blue-600';
                     span.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         try {
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                                await navigator.clipboard.writeText(valor);
-                            } else {
-                                const ta = document.createElement('textarea'); ta.value = valor; ta.style.position = 'fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                            }
-                            const label = (masks && masks[coluna]) ? masks[coluna] : coluna;
-                            mostrarPopup(label + ' copiado');
+                            await navigator.clipboard.writeText(valor);
+                            mostrarPopup('E-mail copiado');
                         } catch (err) {
-                            console.error('Erro ao copiar e-mail/genérico: ', err);
+                            console.error('Erro ao copiar e-mail:', err);
                             mostrarPopup('Erro ao copiar');
                         }
                     });
@@ -500,20 +521,14 @@ function criarTabela(dados) {
                 } else {
                     const valor = getFieldValue(item, coluna);
                     td.textContent = (valor !== undefined && valor !== null) ? String(valor) : '';
-                    td.classList.add('celula-editavel');
                 }
 
-                // Cliques em células (não-contato, não-email) COPIAM o conteúdo
                 if (!isContatoColumn(coluna) && !isEmailColumn(coluna)) {
                     td.addEventListener('click', async (e) => {
                         if (e.target !== td && e.target.closest && e.target.closest('a')) return;
-                        const valor = (getFieldValue(item, coluna) !== undefined && getFieldValue(item, coluna) != null) ? String(getFieldValue(item, coluna)) : td.textContent.trim();
+                        const valor = td.textContent.trim();
                         try {
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                                await navigator.clipboard.writeText(valor);
-                            } else {
-                                const ta = document.createElement('textarea'); ta.value = valor; ta.style.position = 'fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                            }
+                            await navigator.clipboard.writeText(valor);
                             const label = (masks && masks[coluna]) ? masks[coluna] : coluna;
                             mostrarPopup(label + ' copiado');
                         } catch (err) {
@@ -529,15 +544,12 @@ function criarTabela(dados) {
             tbody.appendChild(tr);
         });
 
-        // Aplicar larguras das th nas td
         const ths = Array.from(tabela.querySelectorAll('thead th'));
         ths.forEach((th, i) => {
             const w = th.offsetWidth;
             document.querySelectorAll(`#tabela-dados td:nth-child(${i+1})`).forEach(td => {
                 if (th.style.width) {
                     td.style.width = th.style.width;
-                } else {
-                    td.style.width = 'auto';
                 }
                 td.style.wordBreak = 'break-word';
                 td.style.whiteSpace = 'normal';
@@ -548,37 +560,58 @@ function criarTabela(dados) {
         const td = document.createElement('td');
         td.colSpan = colunasParaExibir.length || 1;
         td.className = 'px-6 py-4 text-center text-gray-500';
-        td.textContent = 'Nenhum dado disponível';
+        td.textContent = 'Nenhum professor disponível';
         tr.appendChild(td);
         tbody.appendChild(tr);
     }
 }
 
+// ---------------- SALVAR ALTERAÇÕES ----------------
+async function salvarAlteracoes() {
+    if (dadosAlterados.size === 0) {
+        alert('Nenhuma alteração para salvar.');
+        return;
+    }
+    try {
+        const btnSalvar = document.getElementById('btn1');
+        const textoOrig = btnSalvar ? btnSalvar.textContent : 'Salvar';
+        if (btnSalvar) { btnSalvar.textContent = 'Salvando...'; btnSalvar.disabled = true; }
+
+        const alteracoes = Array.from(dadosAlterados.values());
+        const promessas = alteracoes.map(al => {
+            const { id, ...campos } = al;
+            return db.collection('dataBaseProfessores').doc(id).update(campos);
+        });
+
+        await Promise.all(promessas);
+
+        dadosAlterados.clear();
+        if (btnSalvar) { 
+            btnSalvar.textContent = textoOrig; 
+            btnSalvar.disabled = false; 
+        }
+        alert('Alterações salvas com sucesso!');
+        carregarDadosFirebase();
+    } catch (err) {
+        console.error('Erro salvar Firebase:', err);
+        alert('Erro ao salvar alterações: ' + err.message);
+        const btnSalvar = document.getElementById('btn1');
+        if (btnSalvar) { btnSalvar.textContent = 'Salvar'; btnSalvar.disabled = false; }
+    }
+}
+
 // ---------------- FUNÇÕES DE FORMATAÇÃO ----------------
 function isCPFColumn(coluna) {
-    const col = coluna.toLowerCase();
-    return col === 'cpf';
+    return coluna.toLowerCase() === 'cpf';
 }
 
 function formatarCPF(cpf) {
     if (!cpf) return '';
-    const numeros = cpf.toString().replace(/\D/g, '');
+    const numeros = cpf.toString().replace(/\D/g, "");
     if (numeros.length === 11) {
-        return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     }
     return cpf;
-}
-
-function formatarTelefone(telefone) {
-    if (!telefone) return '';
-    const numeros = telefone.toString().replace(/\D/g, '');
-    if (numeros.length === 11) {
-        return numeros.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, '($1) $2.$3-$4');
-    }
-    if (numeros.length === 10) {
-        return numeros.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return telefone;
 }
 
 function isContatoColumn(coluna) {
@@ -586,8 +619,20 @@ function isContatoColumn(coluna) {
     return col.includes('telefone') || col.includes('celular') || col.includes('contato') || col.includes('whatsapp');
 }
 
+function formatarTelefone(telefone) {
+    if (!telefone) return '';
+    const numeros = telefone.toString().replace(/\D/g, "");
+    if (numeros.length === 11) {
+        return numeros.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2.$3-$4");
+    }
+    if (numeros.length === 10) {
+        return numeros.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    }
+    return telefone;
+}
+
 function limparNumeroTelefone(numero) {
-    return numero.replace(/\D/g, '');
+    return numero.replace(/\D/g, "");
 }
 
 function isEmailColumn(coluna) {
@@ -624,9 +669,8 @@ function iniciarRedimensionamento(e, coluna) {
     startWidth = coluna.offsetWidth;
     document.body.classList.add('resizing');
     coluna.style.userSelect = 'none';
-    const handle = coluna.querySelector('.resize-handle');
-    if (handle) handle.classList.add('active');
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); 
+    e.stopPropagation();
 }
 
 function redimensionarColuna(e) {
@@ -643,9 +687,6 @@ function redimensionarColuna(e) {
         const todasCelulas = document.querySelectorAll(`#tabela-dados td:nth-child(${indiceCol + 1})`);
         todasCelulas.forEach(celula => {
             celula.style.width = `${largura}px`;
-            celula.style.whiteSpace = 'normal';
-            celula.style.wordBreak = 'break-word';
-            celula.style.overflow = '';
         });
     }
 }
@@ -655,42 +696,9 @@ function pararRedimensionamento() {
     isResizing = false;
     if (currentColumn) {
         currentColumn.style.userSelect = '';
-        const handle = currentColumn.querySelector('.resize-handle');
-        if (handle) handle.classList.remove('active');
     }
     currentColumn = null;
     document.body.classList.remove('resizing');
-}
-
-// ---------------- SALVAR ALTERAÇÕES FIREBASE ----------------
-async function salvarAlteracoes() {
-    if (dadosAlterados.size === 0) {
-        alert('Nenhuma alteração para salvar.');
-        return;
-    }
-    try {
-        const btnSalvar = document.getElementById('btn1');
-        const textoOrig = btnSalvar ? btnSalvar.textContent : 'Salvar';
-        if (btnSalvar) { btnSalvar.textContent = 'Salvando...'; btnSalvar.disabled = true; }
-
-        const alteracoes = Array.from(dadosAlterados.values());
-        const promessas = alteracoes.map(al => {
-            const { id, ...campos } = al;
-            return db.collection('candidatos').doc(id).update(campos);
-        });
-
-        await Promise.all(promessas);
-
-        dadosAlterados.clear();
-        if (btnSalvar) { btnSalvar.classList.remove('btn-salvar-alterado'); btnSalvar.textContent = textoOrig; btnSalvar.disabled = false; }
-        alert('Alterações salvas com sucesso!');
-        carregarDadosFirebase();
-    } catch (err) {
-        console.error('Erro salvar Firebase:', err);
-        alert('Erro ao salvar alterações: ' + (err.message || JSON.stringify(err)));
-        const btnSalvar = document.getElementById('btn1');
-        if (btnSalvar) { btnSalvar.textContent = 'Salvar'; btnSalvar.disabled = false; }
-    }
 }
 
 // ---------------- FILTROS ----------------
@@ -703,19 +711,18 @@ function aplicarFiltros() {
 
     if (nomeValor) {
         resultado = resultado.filter(item => {
-            const campo = String(getFieldValue(item, 'nome') || getFieldValue(item, 'Nome') || getFieldValue(item, 'nomeCompleto') || getFieldValue(item, 'NomeCompleto') || '').toLowerCase();
+            const campo = String(getFieldValue(item, 'nome') || '').toLowerCase();
             return campo.includes(nomeValor);
         });
     }
 
     if (bairroValor) {
         resultado = resultado.filter(item => {
-            const campo = String(getFieldValue(item, 'bairros') || getFieldValue(item, 'bairro') || '').toLowerCase();
+            const campo = String(getFieldValue(item, 'bairros') || '').toLowerCase();
             return campo.includes(bairroValor);
         });
     }
 
-    // turnos/dias
     const turnosSelecionados = Array.from(document.querySelectorAll('input[name="turnos"]:checked')).map(i => i.value);
     if (turnosSelecionados.length > 0) {
         resultado = resultado.filter(item => {
@@ -726,13 +733,12 @@ function aplicarFiltros() {
         });
     }
 
-    // disciplinas (AND)
     const disciplinasSelecionadas = Array.from(document.querySelectorAll('input[name="filtroDisciplinas"]:checked'))
         .map(i => normalizeStr(i.value));
 
     if (disciplinasSelecionadas.length > 0) {
         resultado = resultado.filter(item => {
-            const raw = getFieldValue(item, 'disciplinas') || getFieldValue(item, 'Disciplinas') || getFieldValue(item, 'disciplina') || '';
+            const raw = getFieldValue(item, 'disciplinas') || '';
             let lista = [];
 
             if (Array.isArray(raw)) {
@@ -745,7 +751,6 @@ function aplicarFiltros() {
         });
     }
 
-    // CATEGORIAS
     const categoriasSelecionadas = Array.from(document.querySelectorAll('input[name="filtroCategorias"]:checked')).map(i => i.value);
 
     if (categoriasSelecionadas.length > 0) {
@@ -757,7 +762,6 @@ function aplicarFiltros() {
         });
     }
 
-    // Ordenação se houver sortState
     if (sortState.column) {
         resultado.sort((a, b) => {
             const av = getFieldValue(a, sortState.column);
@@ -778,29 +782,22 @@ function aplicarFiltros() {
     criarTabela(resultado);
 }
 
-// ---------------- FUNÇÕES AUXILIARES ----------------
 function getFieldValue(item, chave) {
     if (!item || !chave) return undefined;
     if (Object.prototype.hasOwnProperty.call(item, chave)) return item[chave];
+    
+    // Tentar variações do nome do campo
     const attempts = [
         chave,
         chave.charAt(0).toLowerCase() + chave.slice(1),
         chave.charAt(0).toUpperCase() + chave.slice(1),
-        chave.toLowerCase(),
-        chave.replace(/[A-Z]/g, m => '_' + m.toLowerCase()).toLowerCase(),
-        chave.replace(/[^a-zA-Z0-9]/g, '')
+        chave.toLowerCase()
     ];
-    for (const k of attempts) if (Object.prototype.hasOwnProperty.call(item, k)) return item[k];
-    const targetNorm = String(chave).toLowerCase().replace(/[^a-z0-9]/g, '');
-    const keys = Object.keys(item);
-    for (const k of keys) {
-        const kn = String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (kn === targetNorm) return item[k];
+    
+    for (const k of attempts) {
+        if (Object.prototype.hasOwnProperty.call(item, k)) return item[k];
     }
-    for (const k of keys) {
-        const kn = String(k).toLowerCase();
-        if (kn.includes(String(chave).toLowerCase())) return item[k];
-    }
+    
     return undefined;
 }
 
@@ -810,31 +807,18 @@ function isTruthyValue(v) {
     if (typeof v === 'number') return v === 1;
     if (Array.isArray(v)) return v.some(x => isTruthyValue(x));
     const s = String(v).toLowerCase().trim();
-    if (!s) return false;
-    if (['true','1','on','yes','sim','s'].includes(s)) return true;
-    const tokens = s.split(/[,;|\/\s]+/).map(t => t.trim()).filter(Boolean);
-    if (tokens.some(t => ['true','1','on','yes','sim','s'].includes(t))) return true;
-    if (/\b(sim)\b/.test(s)) return true;
-    return false;
+    return ['true','1','on','yes','sim','s'].includes(s);
 }
 
 function valueIsSim(v) {
-    if (v === undefined || v === null) return false;
-    if (typeof v === 'boolean') return v === true;
-    if (typeof v === 'number') return v === 1;
-    if (Array.isArray(v)) return v.some(x => valueIsSim(x));
-    const s = String(v).toLowerCase().trim();
-    if (!s) return false;
-    const synonyms = ['sim','s','true','1','on','yes'];
-    if (synonyms.includes(s)) return true;
-    const tokens = s.split(/[,;|\/\s]+/).map(t => t.trim()).filter(Boolean);
-    if (tokens.some(t => synonyms.includes(t))) return true;
-    if (/\b(sim)\b/.test(s)) return true;
-    return false;
+    return isTruthyValue(v);
 }
 
 function limparFiltros() {
-    ['filtroNome','filtroBairro'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    ['filtroNome','filtroBairro'].forEach(id => { 
+        const el = document.getElementById(id); 
+        if (el) el.value = ''; 
+    });
     document.querySelectorAll('input[name="filtroDisciplinas"]').forEach(i => i.checked = false);
     document.querySelectorAll('input[name="filtroCategorias"]').forEach(i => i.checked = false);
     document.querySelectorAll('#diasTurnosContainer input[type="checkbox"]').forEach(i => i.checked = false);
@@ -849,7 +833,7 @@ function normalizeStr(s) {
 function isDateColumnName(name) {
     if (!name) return false;
     const k = name.toLowerCase();
-    return k.includes('data') || k.includes('cadastro') || k.includes('data_cadastro') || k.includes('datacadastro');
+    return k.includes('data') || k.includes('cadastro');
 }
 
 function formatDateForDisplay(raw) {
@@ -869,8 +853,7 @@ function parseDateToMs(raw) {
     if (typeof raw === 'number') return raw;
     if (!isNaN(Number(raw))) return Number(raw);
     const d = new Date(raw);
-    if (isNaN(d.getTime())) return null;
-    return d.getTime();
+    return isNaN(d.getTime()) ? null : d.getTime();
 }
 
 function toggleSort(coluna) {
@@ -895,6 +878,47 @@ function getSortIconMarkup(dir) {
     return `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
 }
 
+// ---------------- DISPONIBILIDADE ----------------
+function formatarDisponibilidade(item) {
+    const diasMap = {
+        segManha: { dia: 'Segunda', turno: 'Manhã' },
+        segTarde: { dia: 'Segunda', turno: 'Tarde' },
+        terManha: { dia: 'Terça', turno: 'Manhã' },
+        terTarde: { dia: 'Terça', turno: 'Tarde' },
+        quaManha: { dia: 'Quarta', turno: 'Manhã' },
+        quaTarde: { dia: 'Quarta', turno: 'Tarde' },
+        quiManha: { dia: 'Quinta', turno: 'Manhã' },
+        quiTarde: { dia: 'Quinta', turno: 'Tarde' },
+        sexManha: { dia: 'Sexta', turno: 'Manhã' },
+        sexTarde: { dia: 'Sexta', turno: 'Tarde' },
+        sabManha: { dia: 'Sábado', turno: 'Manhã' },
+        sabTarde: { dia: 'Sábado', turno: 'Tarde' }
+    };
+
+    const disponibilidadePorDia = {};
+
+    Object.entries(diasMap).forEach(([chave, info]) => {
+        const valor = getFieldValue(item, chave);
+        if (isTruthyValue(valor)) {
+            if (!disponibilidadePorDia[info.dia]) {
+                disponibilidadePorDia[info.dia] = [];
+            }
+            disponibilidadePorDia[info.dia].push(info.turno);
+        }
+    });
+
+    const partes = [];
+    Object.entries(disponibilidadePorDia).forEach(([dia, turnos]) => {
+        if (turnos.length === 2) {
+            partes.push(`${dia}: Manhã e Tarde`);
+        } else if (turnos.length === 1) {
+            partes.push(`${dia}: ${turnos[0]}`);
+        }
+    });
+
+    return partes.join(', ');
+}
+
 // ---------------- DIAS E TURNOS UI ----------------
 function montarDiasTurnos() {
     const diasTurnosContainer = document.getElementById('diasTurnosContainer');
@@ -909,19 +933,6 @@ function montarDiasTurnos() {
         { name: 'Sexta', key: 'sex' },
         { name: 'Sábado', key: 'sab' },
     ];
-
-    const style = document.createElement('style');
-    style.textContent = `
-        .dia-item { margin-bottom: 8px; }
-        .dia-checkbox-container { display: flex; align-items: center; padding: 4px 0; cursor: pointer; }
-        .dia-checkbox { margin-right: 8px; cursor: pointer; }
-        .dia-label { font-weight: 500; cursor: pointer; }
-        .subturnos-container { margin-left: 24px; margin-top: 4px; display: flex; flex-direction: column; gap: 4px; }
-        .turno-option { display: flex; align-items: center; padding: 2px 0; }
-        .turno-option label { margin-left: 6px; cursor: pointer; font-weight: normal; }
-        .hidden { display: none; }
-    `;
-    document.head.appendChild(style);
 
     dias.forEach(d => {
         const diaItem = document.createElement('div');

@@ -650,7 +650,8 @@ async function functionSalvarCandidato() {
       'dataEntrevista',
       'ImpressoesCandidatos', 
       'linkEntrevista',
-      'id'
+      'id',
+      'comentariosAvaliador'
     ];
     
     camposParaRemover.forEach(campo => {
