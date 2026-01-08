@@ -143,33 +143,52 @@ function mostrarErro(mensagem) {
 // ==============================
 function criarCard(item) {
     const card = document.createElement('div');
-    card.className = 'flex flex-col items-center justify-center bg-white p-4 rounded-xl shadow hover:shadow-lg cursor-pointer transition-all border border-gray-200 hover:border-orange-300';
-    card.style.minHeight = '140px';
+    card.className = 'relative flex flex-col items-center justify-center bg-white p-4 rounded-xl shadow hover:shadow-lg cursor-pointer transition-all border border-gray-200 hover:border-orange-300';
+    card.style.minHeight = '160px';
 
     const idValor = item.id;
     card.dataset.id = idValor;
 
+    // Ícone de lixeira no canto superior direito
+    const btnExcluir = document.createElement('button');
+    btnExcluir.className = 'absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-100 transition-all z-10';
+    btnExcluir.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+    `;
+    btnExcluir.title = 'Excluir professor';
+    btnExcluir.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evita abrir os detalhes do professor
+        mostrarPopupExclusao(item);
+    });
+    card.appendChild(btnExcluir);
+
     // Imagem/Ícone do professor
     const imgContainer = document.createElement('div');
-    imgContainer.className = 'flex items-center justify-center mb-3';
+    imgContainer.className = 'flex items-center justify-center mb-2';
     
     const fallback = document.createElement('div');
     fallback.className = 'w-16 h-16 flex items-center justify-center bg-orange-100 rounded-lg';
-    fallback.innerHTML = '<span class="text-2xl">👨‍🏫</span>';
+    fallback.innerHTML = '<span class="text-3xl">👨‍🏫</span>';
     imgContainer.appendChild(fallback);
 
     // Nome do professor
     const nome = document.createElement('p');
-    nome.className = 'text-center text-sm font-medium text-gray-700 truncate w-full px-2';
+    nome.className = 'text-center text-xs font-normal text-gray-800 w-full px-2 mb-1';
+    nome.style.lineHeight = '1.3';
+    nome.title = item.nome || 'Professor sem nome'; // Tooltip com nome completo
     const nomeCompleto = item.nome || 'Professor sem nome';
-    nome.textContent = nomeCompleto.length > 20 ? nomeCompleto.substring(0, 20) + '...' : nomeCompleto;
+    nome.textContent = nomeCompleto.length > 25 ? nomeCompleto.substring(0, 25) + '...' : nomeCompleto;
 
     // Status do professor
     const status = document.createElement('p');
-    status.className = `text-center text-xs mt-1 px-2 py-1 rounded-full ${
-        item.status === 'Ativo' ? 'bg-green-100 text-green-800' : 
-        item.status === 'Inativo' ? 'bg-red-100 text-red-800' : 
-        'bg-gray-100 text-gray-800'
+    status.className = `text-center text-xs font-medium px-3 py-1 rounded-full ${
+        item.status === 'Ativo' ? 'bg-green-100 text-green-700' : 
+        item.status === 'Inativo' ? 'bg-red-100 text-red-700' : 
+        item.status === 'Férias' ? 'bg-yellow-100 text-yellow-700' :
+        item.status === 'Afastado' ? 'bg-gray-100 text-gray-700' :
+        'bg-blue-100 text-blue-700'
     }`;
     status.textContent = item.status || 'Ativo';
 
@@ -420,6 +439,113 @@ function abrirDetalhes(item) {
     const detalhesDados = el(DETALHES_DADOS);
     if (detalhesDados) {
         detalhesDados.scrollTop = 0;
+    }
+}
+
+// ==============================
+// EXCLUSÃO DE PROFESSOR
+// ==============================
+function mostrarPopupExclusao(professor) {
+    const nomeProfessor = professor.nome || 'este professor';
+    
+    // Criar overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    overlay.id = 'popup-exclusao';
+    
+    // Criar popup
+    const popup = document.createElement('div');
+    popup.className = 'bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform transition-all';
+    popup.innerHTML = `
+        <div class="flex items-center justify-center mb-4">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </div>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Deseja excluir este professor?</h3>
+        <p class="text-gray-600 text-center mb-6">O professor <strong>${nomeProfessor}</strong> será removido permanentemente do banco de dados.</p>
+        <div class="flex gap-3">
+            <button id="btn-cancelar-exclusao" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all">
+                Cancelar
+            </button>
+            <button id="btn-confirmar-exclusao" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-all">
+                Excluir
+            </button>
+        </div>
+    `;
+    
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+    
+    // Eventos dos botões
+    document.getElementById('btn-cancelar-exclusao').addEventListener('click', () => {
+        fecharPopupExclusao();
+    });
+    
+    document.getElementById('btn-confirmar-exclusao').addEventListener('click', () => {
+        excluirProfessor(professor.id);
+    });
+    
+    // Fechar ao clicar no overlay
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            fecharPopupExclusao();
+        }
+    });
+}
+
+function fecharPopupExclusao() {
+    const popup = document.getElementById('popup-exclusao');
+    if (popup) {
+        popup.remove();
+    }
+}
+
+async function excluirProfessor(professorId) {
+    try {
+        console.log('🗑️ Excluindo professor:', professorId);
+        
+        // Mostrar loading no botão
+        const btnConfirmar = document.getElementById('btn-confirmar-exclusao');
+        if (btnConfirmar) {
+            btnConfirmar.textContent = 'Excluindo...';
+            btnConfirmar.disabled = true;
+        }
+        
+        // Excluir do Firebase
+        await db.collection('dataBaseProfessores').doc(professorId).delete();
+        
+        console.log('✅ Professor excluído com sucesso');
+        
+        // Remover dos registros locais
+        registros = registros.filter(r => r.id !== professorId);
+        
+        // Fechar popup
+        fecharPopupExclusao();
+        
+        // Mostrar mensagem de sucesso
+        mostrarToast('Professor excluído com sucesso!', 'success');
+        
+        // Atualizar grid
+        renderGrid();
+        
+        // Se estava visualizando o professor excluído, voltar para a lista
+        if (selecionadoId === professorId) {
+            mostrarSectionPastas();
+        }
+        
+    } catch (err) {
+        console.error('❌ Erro ao excluir professor:', err);
+        mostrarToast('Erro ao excluir professor: ' + (err.message || 'Tente novamente.'), 'error');
+        
+        // Restaurar botão em caso de erro
+        const btnConfirmar = document.getElementById('btn-confirmar-exclusao');
+        if (btnConfirmar) {
+            btnConfirmar.textContent = 'Excluir';
+            btnConfirmar.disabled = false;
+        }
     }
 }
 
