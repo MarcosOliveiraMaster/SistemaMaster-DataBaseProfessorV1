@@ -1,9 +1,51 @@
+/* ============================== 
+   RESPONSIVIDADE PARA DESKTOPS 
+   ============================== */
+
+/* Base - Telas grandes (1920px+) */
+html {
+  font-size: 16px;
+}
+
 body {
   font-family: 'Lexend', sans-serif;
   background-color: #f3f4f6;
   font-size: 0.875rem;
 }
 .font-comfortaa { font-family: 'Comfortaa', cursive; }
+
+/* Telas médias de desktop (1366px - 1600px) */
+@media screen and (max-width: 1600px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .main-container {
+    zoom: 0.9;
+  }
+}
+
+/* Laptops e telas menores (1024px - 1366px) */
+@media screen and (max-width: 1366px) {
+  html {
+    font-size: 13px;
+  }
+  
+  body {
+    font-size: 0.8rem;
+  }
+}
+
+/* Laptops pequenos (até 1024px) */
+@media screen and (max-width: 1024px) {
+  html {
+    font-size: 12px;
+  }
+  
+  body {
+    font-size: 0.75rem;
+  }
+}
 
 .table-wrapper {
   width: 100%;
@@ -29,6 +71,28 @@ body {
   border-right: 1px dashed #e5e7eb;
   white-space: normal;
   word-break: break-word;
+}
+
+/* Ajustes responsivos para tabela */
+@media screen and (max-width: 1600px) {
+  #tabela-dados th, #tabela-dados td {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+}
+
+@media screen and (max-width: 1366px) {
+  #tabela-dados th, #tabela-dados td {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  #tabela-dados th, #tabela-dados td {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
 }
 
 #tabela-dados thead {
@@ -130,6 +194,25 @@ body.resizing { cursor: col-resize; }
 
 #grid-perfis {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Ajustes responsivos para o grid de professores */
+@media screen and (max-width: 1600px) {
+  #grid-perfis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 1366px) {
+  #grid-perfis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  #grid-perfis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* Melhorias para os campos de edição */
@@ -414,4 +497,108 @@ textarea#impressoesCandidato { min-height: 120px; } /* será ajustado via JS tam
 
 #listaCandidatos::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* ============================== 
+   AJUSTES RESPONSIVOS GLOBAIS
+   ============================== */
+
+/* Reduzir padding de botões em telas menores */
+@media screen and (max-width: 1600px) {
+  button, .btn {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  input, select, textarea {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media screen and (max-width: 1366px) {
+  button, .btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+  }
+  
+  input, select, textarea {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  button, .btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  input, select, textarea {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.75rem;
+  }
+  
+  h1 {
+    font-size: 1.3rem;
+  }
+  
+  h2 {
+    font-size: 1.1rem;
+  }
+  
+  h3 {
+    font-size: 1rem;
+  }
+}
+
+/* ============================== 
+   ESTILOS PARA FOTOS DE PERFIL
+   ============================== */
+
+/* Preview de foto de perfil no formulário de edição */
+#preview-foto-perfil img,
+#preview-foto-perfil > div {
+  transition: all 0.3s ease;
+}
+
+#preview-foto-perfil img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(249, 115, 22, 0.2);
+}
+
+/* Cards de professores - garantir que imagens fiquem bem formatadas */
+.profile-card-image {
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0.5rem;
+}
+
+/* Ajustes responsivos para imagens de perfil nos cards */
+@media screen and (max-width: 1366px) {
+  #preview-foto-perfil img,
+  #preview-foto-perfil > div {
+    width: 14rem !important;
+    height: 14rem !important;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  #preview-foto-perfil img,
+  #preview-foto-perfil > div {
+    width: 12rem !important;
+    height: 12rem !important;
+  }
 }

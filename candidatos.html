@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Avaliação de Candidatos - Professores</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontSize: {
+            'responsive-sm': 'clamp(0.7rem, 0.9vw, 0.875rem)',
+            'responsive-base': 'clamp(0.8rem, 1vw, 1rem)',
+            'responsive-lg': 'clamp(0.9rem, 1.1vw, 1.125rem)',
+            'responsive-xl': 'clamp(1rem, 1.25vw, 1.25rem)',
+          }
+        }
+      }
+    }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700&family=Comfortaa:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
@@ -15,40 +29,40 @@
 </head>
 
 <body class="h-screen flex flex-col">
-  <header class="relative bg-orange-500 h-16 flex items-center px-6 shadow-md">
+  <header class="relative bg-orange-500 h-12 lg:h-14 xl:h-16 flex items-center px-3 lg:px-4 xl:px-6 shadow-md">
     <div class="absolute right-0 top-0 h-full w-1/4 bg-orange-500 shadow-[inset_5px_0_15px_rgba(0,0,0,0.1)] rounded-bl-3xl"></div>
     <div class="relative z-10 flex items-center">
-      <div class="bg-gray-300 w-12 h-12 rounded-lg mr-4"></div>
+      <div class="bg-gray-300 w-8 h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 rounded-lg mr-2 lg:mr-3 xl:mr-4"></div>
       <div>
-        <h1 id="tituloPrincipal" class="text-xl text-white font-bold">Avaliação de Candidatos</h1>
-        <p id="subtitulo" class="text-xs text-orange-100 font-comfortaa">Ester Calazans: Administradora geral</p>
+        <h1 id="tituloPrincipal" class="text-base lg:text-lg xl:text-xl text-white font-bold">Avaliação de Candidatos</h1>
+        <p id="subtitulo" class="text-[0.65rem] lg:text-xs text-orange-100 font-comfortaa">Ester Calazans: Administradora geral</p>
       </div>
     </div>
   </header>
 
   <div class="flex flex-1 overflow-hidden">
-    <nav class="bg-gray-200 w-20 flex flex-col items-center py-6 space-y-4 rounded-r-3xl">
-      <a href="index.html" class="w-12 h-12 border-2 border-orange-500 rounded-xl hover:bg-orange-500 transition duration-300 flex items-center justify-center" title="Dashboard Principal">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <nav class="bg-gray-200 w-14 lg:w-16 xl:w-20 flex flex-col items-center py-3 lg:py-4 xl:py-6 space-y-2 lg:space-y-3 xl:space-y-4 rounded-r-3xl">
+      <a href="index.html" class="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 border-2 border-orange-500 rounded-xl hover:bg-orange-500 transition duration-300 flex items-center justify-center" title="Dashboard Principal">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 xl:h-6 xl:w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
         </svg>
       </a>
-      <a href="section-edicao.html" class="w-12 h-12 border-2 border-orange-500 rounded-xl hover:bg-orange-500 transition duration-300 flex items-center justify-center" title="Edição de Perfis">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <a href="section-edicao.html" class="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 border-2 border-orange-500 rounded-xl hover:bg-orange-500 transition duration-300 flex items-center justify-center" title="Edição de Perfis">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 xl:h-6 xl:w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
       </a>
-      <button class="w-12 h-12 border-2 border-orange-500 bg-orange-500 rounded-xl transition duration-300 flex items-center justify-center" title="Avaliação de Candidatos (Atual)">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button class="w-9 h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 border-2 border-orange-500 bg-orange-500 rounded-xl transition duration-300 flex items-center justify-center" title="Avaliação de Candidatos (Atual)">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 xl:h-6 xl:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
         </svg>
       </button>
     </nav>
 
-    <main class="flex-1 bg-gray-200 m-6 rounded-3xl shadow-inner overflow-hidden relative p-4">
-      <div class="flex h-full gap-4">
+    <main class="flex-1 bg-gray-200 m-2 lg:m-4 xl:m-6 rounded-2xl lg:rounded-3xl shadow-inner overflow-hidden relative p-2 lg:p-3 xl:p-4">
+      <div class="flex h-full gap-2 lg:gap-3 xl:gap-4">
 
         <!-- COLUNA 1 -->
         <div class="w-1/4 flex flex-col gap-3">
@@ -192,7 +206,7 @@
 
           <div class="flex justify-between mt-auto">
             <button id="btnExcluirCandidato" class="bg-red-600 text-white text-xs p-2 rounded w-[48%] hover:bg-red-700 transition">Excluir Candidato</button>
-            <button id="btnSalvarCandidato" class="bg-green-600 text-white text-xs p-2 rounded w-[48%] hover:bg-green-700 transition">Salvar Candidato</button>
+            <button id="btnSalvarCandidato" class="bg-green-600 text-white text-xs p-2 rounded w-[48%] hover:bg-green-700 transition">Promover Professor</button>
           </div>
         </div>
 

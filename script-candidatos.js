@@ -221,13 +221,16 @@ function renderizarListaCandidatos(lista = candidatos) {
   const container = document.getElementById("listaCandidatos");
   container.innerHTML = "";
 
-  if (lista.length === 0) {
+  // Filtrar candidatos com status "Repescagem"
+  const listaFiltrada = lista.filter(c => c.status !== "Repescagem");
+
+  if (listaFiltrada.length === 0) {
     container.innerHTML =
       '<div class="p-3 text-center text-gray-500">Nenhum candidato encontrado</div>';
     return;
   }
 
-  lista.forEach(c => {
+  listaFiltrada.forEach(c => {
     const item = document.createElement("div");
     item.className =
       "p-2 border-b cursor-pointer hover:bg-orange-50 transition";
@@ -244,7 +247,9 @@ function aplicarFiltros() {
   const status = document.getElementById("filtroStatus").value;
   const disc = document.getElementById("filtroDisciplina").value;
   const dataFiltro = document.getElementById("filtroDataEntrevista").value;
-  let filtrados = candidatos;
+  
+  // Sempre excluir candidatos com status "Repescagem"
+  let filtrados = candidatos.filter(c => c.status !== "Repescagem");
 
   // Filtro por status
   if (status) {
@@ -621,16 +626,16 @@ async function excluirCandidato() {
 
   try {
     await db.collection("candidatos").doc(candidatoSelecionado.id).update({
-      status: "Reprovado"
+      status: "Repescagem"
     });
 
-    candidatoSelecionado.status = "Reprovado";
-    mostrarToast("Candidato marcado como Reprovado");
+    candidatoSelecionado.status = "Repescagem";
+    mostrarToast("Candidato marcado como Repescagem");
     renderizarListaCandidatos();
     preencherAreaAvaliacao();
   } catch (error) {
-    console.error("Erro ao excluir candidato:", error);
-    mostrarToast("Erro ao excluir candidato!");
+    console.error("Erro ao marcar candidato como repescagem:", error);
+    mostrarToast("Erro ao processar candidato!");
   }
 }
 
@@ -675,14 +680,12 @@ async function functionSalvarCandidato() {
     
     mostrarToast("✅ Candidato promovido a professor ativo com sucesso!");
     
-    // 6. Atualizar candidato original
-    await db.collection("candidatos").doc(candidatoSelecionado.id).update({
-      status: "Promovido a Professor"
-    });
+    // 6. Excluir candidato da coleção candidatos
+    await db.collection("candidatos").doc(candidatoSelecionado.id).delete();
     
     // 7. Atualizar interface
-    candidatoSelecionado.status = "Promovido a Professor";
-    renderizarListaCandidatos();
+    candidatoSelecionado = null;
+    await carregarCandidatos();
     preencherAreaAvaliacao();
     
   } catch (error) {
@@ -729,7 +732,7 @@ function inicializarApp() {
   document.getElementById("btnExcluirCandidato").addEventListener("click", () => {
     abrirPopup(
       "Excluir Candidato",
-      "Ao confirmar, o candidato será marcado como Reprovado. Deseja continuar?",
+      "O professor será marcado como reprovado e sairá do registro de candidatos. Para repescagem, consulte a equipe de TI",
       () => { excluirCandidato(); },
       "Confirmar",
       "Cancelar"

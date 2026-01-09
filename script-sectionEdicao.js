@@ -143,17 +143,17 @@ function mostrarErro(mensagem) {
 // ==============================
 function criarCard(item) {
     const card = document.createElement('div');
-    card.className = 'relative flex flex-col items-center justify-center bg-white p-4 rounded-xl shadow hover:shadow-lg cursor-pointer transition-all border border-gray-200 hover:border-orange-300';
-    card.style.minHeight = '160px';
+    card.className = 'relative flex flex-col items-center justify-center bg-white p-3 lg:p-4 rounded-xl shadow hover:shadow-lg cursor-pointer transition-all border border-gray-200 hover:border-orange-300';
+    card.style.minHeight = '280px';
 
     const idValor = item.id;
     card.dataset.id = idValor;
 
     // Ícone de lixeira no canto superior direito
     const btnExcluir = document.createElement('button');
-    btnExcluir.className = 'absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-100 transition-all z-10';
+    btnExcluir.className = 'absolute top-1.5 right-1.5 lg:top-2 lg:right-2 w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center rounded-md hover:bg-red-100 transition-all z-10';
     btnExcluir.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 lg:h-5 lg:w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
     `;
@@ -168,10 +168,30 @@ function criarCard(item) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'flex items-center justify-center mb-2';
     
-    const fallback = document.createElement('div');
-    fallback.className = 'w-16 h-16 flex items-center justify-center bg-orange-100 rounded-lg';
-    fallback.innerHTML = '<span class="text-3xl">👨‍🏫</span>';
-    imgContainer.appendChild(fallback);
+    // Verificar se tem foto de perfil definida
+    const fotoPerfil = item.fotoPerfil;
+    if (fotoPerfil && fotoPerfil !== 'icone-padrao') {
+        // Exibir imagem
+        const img = document.createElement('img');
+        img.src = getCaminhoFotoPerfil(fotoPerfil);
+        img.alt = item.nome || 'Professor';
+        img.className = 'w-32 h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48 rounded-lg object-cover border-2 border-orange-200';
+        img.onerror = function() {
+            // Se a imagem falhar ao carregar, mostrar ícone padrão
+            this.style.display = 'none';
+            const fallback = document.createElement('div');
+            fallback.className = 'w-32 h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48 flex items-center justify-center bg-orange-100 rounded-lg';
+            fallback.innerHTML = '<span class="text-4xl lg:text-5xl xl:text-6xl">👨‍🏫</span>';
+            this.parentNode.appendChild(fallback);
+        };
+        imgContainer.appendChild(img);
+    } else {
+        // Exibir ícone padrão
+        const fallback = document.createElement('div');
+        fallback.className = 'w-32 h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48 flex items-center justify-center bg-orange-100 rounded-lg';
+        fallback.innerHTML = '<span class="text-4xl lg:text-5xl xl:text-6xl">👨‍🏫</span>';
+        imgContainer.appendChild(fallback);
+    }
 
     // Nome do professor
     const nome = document.createElement('p');
@@ -183,7 +203,7 @@ function criarCard(item) {
 
     // Status do professor
     const status = document.createElement('p');
-    status.className = `text-center text-xs font-medium px-3 py-1 rounded-full ${
+    status.className = `text-center text-[0.65rem] lg:text-xs font-medium px-2 lg:px-3 py-0.5 lg:py-1 rounded-full ${
         item.status === 'Ativo' ? 'bg-green-100 text-green-700' : 
         item.status === 'Inativo' ? 'bg-red-100 text-red-700' : 
         item.status === 'Férias' ? 'bg-yellow-100 text-yellow-700' :
@@ -264,6 +284,7 @@ function formatarLabel(chave) {
         cep: 'CEP',
         status: 'Status',
         dataAtivacao: 'Data de Ativação',
+        fotoPerfil: 'Foto de Perfil',
         segManha: 'Segunda - Manhã',
         segTarde: 'Segunda - Tarde',
         terManha: 'Terça - Manhã',
@@ -304,6 +325,20 @@ function criarCampoEditavel(chave, valor) {
             option.value = opcao;
             option.textContent = opcao;
             option.selected = valorStr === opcao;
+            input.appendChild(option);
+        });
+    }
+    // Campo de Foto de Perfil
+    else if (chave === 'fotoPerfil') {
+        input = document.createElement('select');
+        input.className = 'w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500';
+        
+        const opcoes = getOpcoesFotoPerfil();
+        opcoes.forEach(opcao => {
+            const option = document.createElement('option');
+            option.value = opcao;
+            option.textContent = opcao === 'icone-padrao' ? 'Ícone Padrão' : opcao.replace('.png', '');
+            option.selected = valorStr === opcao || (!valorStr && opcao === 'icone-padrao');
             input.appendChild(option);
         });
     }
@@ -350,6 +385,42 @@ function criarCampoEditavel(chave, valor) {
     div.appendChild(label);
     div.appendChild(input);
 
+    // Se for campo de foto de perfil, adicionar preview
+    if (chave === 'fotoPerfil') {
+        const previewContainer = document.createElement('div');
+        previewContainer.className = 'mt-3 flex justify-center';
+        previewContainer.id = 'preview-foto-perfil';
+        
+        const atualizarPreview = (valor) => {
+            previewContainer.innerHTML = '';
+            if (valor && valor !== 'icone-padrao') {
+                const imgPreview = document.createElement('img');
+                imgPreview.src = getCaminhoFotoPerfil(valor);
+                imgPreview.alt = 'Preview';
+                imgPreview.className = 'w-64 h-64 rounded-lg object-cover border-2 border-orange-300 shadow-md';
+                imgPreview.onerror = function() {
+                    previewContainer.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar imagem</p>';
+                };
+                previewContainer.appendChild(imgPreview);
+            } else {
+                const iconPreview = document.createElement('div');
+                iconPreview.className = 'w-64 h-64 flex items-center justify-center bg-orange-100 rounded-lg border-2 border-orange-300';
+                iconPreview.innerHTML = '<span class="text-8xl">👨‍🏫</span>';
+                previewContainer.appendChild(iconPreview);
+            }
+        };
+        
+        // Preview inicial
+        atualizarPreview(valorStr || 'icone-padrao');
+        
+        // Atualizar preview quando selecionar nova foto
+        input.addEventListener('change', (e) => {
+            atualizarPreview(e.target.value);
+        });
+        
+        div.appendChild(previewContainer);
+    }
+
     return div;
 }
 
@@ -372,7 +443,7 @@ function abrirDetalhes(item) {
     // Ordenar campos para melhor organização
     const camposPrioritarios = [
         'nome', 'cpf', 'email', 'contato', 'nivel', 'curso', 
-        'pix', 'bairros', 'disciplinas', 'status'
+        'pix', 'bairros', 'disciplinas', 'status', 'fotoPerfil'
     ];
     
     const camposDisponibilidade = [
@@ -394,8 +465,8 @@ function abrirDetalhes(item) {
     container.appendChild(secaoInfo);
 
     camposPrioritarios.forEach((chave) => {
-        if (item.hasOwnProperty(chave) || chave === 'status') {
-            const valor = item[chave] || '';
+        if (item.hasOwnProperty(chave) || chave === 'status' || chave === 'fotoPerfil') {
+            const valor = item[chave] || (chave === 'fotoPerfil' ? 'icone-padrao' : '');
             const campoElement = criarCampoEditavel(chave, valor);
             gridInfo.appendChild(campoElement);
         }
